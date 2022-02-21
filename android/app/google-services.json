@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "684546928509",
+    "project_id": "clothes-ecom",
+    "storage_bucket": "clothes-ecom.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:684546928509:android:3489e59209472c824de614",
+        "android_client_info": {
+          "package_name": "com.clothes.ecommerce"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "684546928509-33g4voouo6t44kjtvvj97mfbg83gsjm6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.clothes.ecommerce",
+            "certificate_hash": "124310b53bf1bad42f92e55451b502c1acc5b0bc"
+          }
+        },
+        {
+          "client_id": "684546928509-mrggmmhj4eah6is3fvksp883bad77on9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCWzhsmdr7PRTceLlfd50es9Um0la10Gnk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "684546928509-mrggmmhj4eah6is3fvksp883bad77on9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
