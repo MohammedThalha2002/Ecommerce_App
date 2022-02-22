@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'package:like_button/like_button.dart';
 import 'package:random_string/random_string.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:top_snackbar_flutter/custom_snack_bar.dart';
@@ -13,7 +14,7 @@ import 'package:top_snackbar_flutter/top_snack_bar.dart';
 class ProductOverview extends StatefulWidget {
   final docId;
   final int index;
-  const ProductOverview({Key? key, required this.docId,required this.index})
+  const ProductOverview({Key? key, required this.docId, required this.index})
       : super(key: key);
 
   @override
@@ -70,10 +71,16 @@ class _ProductOverviewState extends State<ProductOverview> {
   }
 
   //Required Variables
-  String title = "", desc = "", price = "", selectedSize = "", category = '';
+  String title = "",
+      desc = "",
+      price = "",
+      selectedSize = "",
+      category = '',
+      likes = '';
   List sizeList = [];
   List ImgUrl = [];
   int isSelected = 0;
+  bool isLiked = false;
   var docId;
   var data;
   late bool isloading;
@@ -132,6 +139,8 @@ class _ProductOverviewState extends State<ProductOverview> {
       print(ImgUrl);
       selectedSize = sizeList[isSelected];
       print(selectedSize);
+      likes = data['likes'].toString();
+      print(likes);
     });
     Future.delayed(Duration(milliseconds: 1000), () {
       setState(() {
@@ -169,13 +178,72 @@ class _ProductOverviewState extends State<ProductOverview> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        Text(
-                          "₹" + price,
-                          style: TextStyle(
-                            color: Colors.green,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w400,
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "₹" + price,
+                              style: TextStyle(
+                                color: Colors.green,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                LikeButton(
+                                  isLiked: isLiked,
+                                  onTap: (isLiked) async {
+                                    setState(() {
+                                      this.isLiked = !isLiked;
+                                    });
+                                    print(this.isLiked);
+                                    Future.delayed(Duration(milliseconds: 100))
+                                        .then((_) {
+                                      setState(() {
+                                        if (this.isLiked) {
+                                          likes =
+                                              (int.parse(likes) + 1).toString();
+                                        } else {
+                                          likes =
+                                              (int.parse(likes) - 1).toString();
+                                        }
+                                      });
+                                      FirebaseFirestore.instance
+                                          .collection("Products")
+                                          .doc(widget.docId)
+                                          .update({
+                                        "likes": likes,
+                                      });
+                                      print("Liked");
+                                    });
+                                    return !isLiked;
+                                  },
+                                  likeBuilder: (bool isLiked) {
+                                    return Icon(
+                                      Icons.favorite,
+                                      color:
+                                          isLiked ? Colors.pink : Colors.grey,
+                                      size: 22,
+                                    );
+                                  },
+                                  bubblesColor: BubblesColor(
+                                      dotPrimaryColor: Colors.white,
+                                      dotSecondaryColor: Colors.white,
+                                      dotThirdColor: Color(0xFFFF5722),
+                                      dotLastColor: Color(0xFFF44336)),
+                                  size: 22,
+                                ),
+                                SizedBox(
+                                  width: 3,
+                                ),
+                                Text(likes),
+                              ],
+                            ),
+                          ],
+                        ),
+                        SizedBox(
+                          height: 10,
                         ),
                         isloading == false
                             ? Container(

@@ -477,7 +477,7 @@ class _DeliveryDetailsState extends State<DeliveryDetails> {
         children: [
           AnimatedButton(
             child: Text(
-              'Process to Pay',
+              'Submit',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w400,

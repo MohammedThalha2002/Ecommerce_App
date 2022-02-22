@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce/Pages/Product_home_page.dart';
 import 'package:ecommerce/backend/sendNotification.dart';
+import 'package:ecommerce/widgets/delivery_accepted_lottie.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -171,7 +172,7 @@ class _AddingDeliveryState extends State<AddingDelivery> {
             try {
               _addAddress().then(
                 (value) => Get.to(
-                  HomePage(),
+                  DeliveryAcceptedLottie(),
                   transition: Transition.native,
                 ),
               );
@@ -214,7 +215,7 @@ class _AddingDeliveryState extends State<AddingDelivery> {
 
     flutterNotificationPlugin.show(
       0,
-      'Hi, this is from ShopMe',
+      'Hi, this is from JM Cottons',
       'Your Order has been Accepted and will arrive soon',
       platformChannelSpecifics,
       payload: 'Default Sound',

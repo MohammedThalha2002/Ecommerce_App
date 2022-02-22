@@ -120,6 +120,7 @@ class _AdminAddProductsState extends State<AdminAddProducts>
       "size": sizeList,
       "category": category,
       "imgUrl": ImageUrlsFullList,
+      "likes" : 0,
     }).then((value) {
       setState(() {
         ImageUrlsFullList.clear();

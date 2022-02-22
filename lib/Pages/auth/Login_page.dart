@@ -47,7 +47,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     Image.asset(
                       "assets/logo.png",
-                      width: 400,
+                      width: 200,
                     ),
                     Column(
                       children: [

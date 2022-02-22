@@ -58,7 +58,7 @@ class _HomePageState extends State<HomePage>
       () => _animationController.forward(),
     );
     _timer = Timer.periodic(Duration(seconds: 3), (Timer timer) {
-      if (_currentPage < 2) {
+      if (_currentPage < 3) {
         _currentPage++;
       } else {
         _currentPage = 0;
@@ -70,12 +70,12 @@ class _HomePageState extends State<HomePage>
         curve: Curves.fastOutSlowIn,
       );
     });
-    gettingTokenId().then(
-      (value) {
-        print(value.toString());
-        savingTokenId();
-      },
-    );
+    // gettingTokenId().then(
+    //   (value) {
+    //     print(value.toString());
+    //     savingTokenId();
+    //   },
+    // );
     // TODO: implement initState
     super.initState();
   }
@@ -179,38 +179,55 @@ class _HomePageState extends State<HomePage>
                   opacity: _animationController,
                   child: SizedBox(
                     height: 165,
-                    child: PageView.builder(
-                      controller: _pageController,
-                      scrollDirection: Axis.horizontal,
-                      itemCount: 3,
-                      itemBuilder: (context, index) {
-                        int imageNo = index + 1;
-                        return Padding(
-                          padding: const EdgeInsets.only(
-                              left: 8.0, right: 8.0, bottom: 8.0),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(20),
-                            child: Container(
-                              width: MediaQuery.of(context).size.width,
-                              margin: EdgeInsets.symmetric(horizontal: 5.0),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: Colors.white,
-                                  width: 3,
-                                ),
-                                image: DecorationImage(
-                                  image: AssetImage(
-                                    'assets/banner' + "$imageNo" + ".jpg",
+                    child: StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection("BannerImages")
+                            .snapshots(),
+                        builder: ((context, snapshot) {
+                          if (snapshot.hasError) {
+                            return Text('Something went wrong');
+                          }
+
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                          return PageView.builder(
+                              controller: _pageController,
+                              scrollDirection: Axis.horizontal,
+                              itemCount: snapshot.data!.docs.length,
+                              itemBuilder: (context, int index) {
+                                DocumentSnapshot data =
+                                    snapshot.data!.docs[index];
+                                return Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 8.0, right: 8.0, bottom: 8.0),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(20),
+                                    child: Container(
+                                      width: MediaQuery.of(context).size.width,
+                                      margin:
+                                          EdgeInsets.symmetric(horizontal: 5.0),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(
+                                          color: Colors.white,
+                                          width: 3,
+                                        ),
+                                        image: DecorationImage(
+                                          image: NetworkImage(
+                                            data['image'].toString(),
+                                          ),
+                                          fit: BoxFit.fill,
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                  fit: BoxFit.fill,
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                                );
+                              });
+                        })),
                   ),
                 ),
               ),
@@ -304,30 +321,30 @@ class _HomePageState extends State<HomePage>
                 SizedBox(
                   height: 10,
                 ),
-                ListTile(
-                  onTap: () {
-                    Get.to(
-                      TermsAndConditions(),
-                      transition: Transition.native,
-                      duration: Duration(milliseconds: 1000),
-                      curve: Curves.fastOutSlowIn,
-                    );
-                  },
-                  leading: Icon(FontAwesomeIcons.solidStickyNote),
-                  title: Text('Terms and Conditions'),
-                ),
-                ListTile(
-                  onTap: () {
-                    Get.to(
-                      PrivacyPolicy(),
-                      transition: Transition.native,
-                      duration: Duration(milliseconds: 1000),
-                      curve: Curves.fastOutSlowIn,
-                    );
-                  },
-                  leading: Icon(FontAwesomeIcons.solidBuilding),
-                  title: Text('Privacy Policy'),
-                ),
+                // ListTile(
+                //   onTap: () {
+                //     Get.to(
+                //       TermsAndConditions(),
+                //       transition: Transition.native,
+                //       duration: Duration(milliseconds: 1000),
+                //       curve: Curves.fastOutSlowIn,
+                //     );
+                //   },
+                //   leading: Icon(FontAwesomeIcons.solidStickyNote),
+                //   title: Text('Terms and Conditions'),
+                // ),
+                // ListTile(
+                //   onTap: () {
+                //     Get.to(
+                //       PrivacyPolicy(),
+                //       transition: Transition.native,
+                //       duration: Duration(milliseconds: 1000),
+                //       curve: Curves.fastOutSlowIn,
+                //     );
+                //   },
+                //   leading: Icon(FontAwesomeIcons.solidBuilding),
+                //   title: Text('Privacy Policy'),
+                // ),
                 ListTile(
                   onTap: () {
                     signOutFromGoogle();
@@ -346,6 +363,17 @@ class _HomePageState extends State<HomePage>
           ),
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Get.to(
+              MyWhishList(),
+              transition: Transition.native,
+              duration: Duration(seconds: 1),
+            );
+          },
+          child: Icon(FontAwesomeIcons.heart),
+          elevation: 10,
+        ),
     );
   }
 }
