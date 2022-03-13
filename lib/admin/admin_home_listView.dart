@@ -68,9 +68,12 @@ Widget AdminHomeListView({
                   },
                   splashColor: Colors.pinkAccent,
                   child: ListTile(
-                    leading: Image.network(
-                      data['imgUrl'][0],
-                      height: 100,
+                    leading: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        data['imgUrl'][0],
+                        height: 100,
+                      ),
                     ),
                     title: Text(data['title']),
                     subtitle: Text(

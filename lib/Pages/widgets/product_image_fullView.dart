@@ -44,12 +44,14 @@ class _ProductImageFullViewState extends State<ProductImageFullView> {
   Widget build(BuildContext context) {
     return hasInternet
         ? Scaffold(
-            body: Container(
-            height: MediaQuery.of(context).size.height,
-            width: MediaQuery.of(context).size.width,
-            child: Image.network(
-              widget.imgUrl,
-              fit: BoxFit.contain,
+            body: InteractiveViewer(
+            child: Container(
+              height: MediaQuery.of(context).size.height,
+              width: MediaQuery.of(context).size.width,
+              child: Image.network(
+                widget.imgUrl,
+                fit: BoxFit.contain,
+              ),
             ),
           ))
         : noInternet();

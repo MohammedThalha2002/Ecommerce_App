@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce/Pages/Product_home_page.dart';
 import 'package:ecommerce/Pages/auth/Login_page.dart';
 import 'package:ecommerce/Pages/auth/auth_checker.dart';
+import 'package:ecommerce/admin/admin_home_page.dart';
 import 'package:ecommerce/widgets/no_internet.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -19,7 +20,6 @@ Future main() async {
   await Firebase.initializeApp();
   const AndroidInitializationSettings initializationSettingsAndroid =
       AndroidInitializationSettings('app_icon');
-  // FirebaseMessaging.onBackgroundMessage(_messageHandler);
   runApp(MyApp());
 }
 
@@ -39,7 +39,7 @@ class _MyAppState extends State<MyApp> {
       // bind our app with the  Getx Controller
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        fontFamily: "Poppins",
+        fontFamily: "Montserrat",
         primaryColor: Colors.pink,
         primarySwatch: Colors.pink,
       ),

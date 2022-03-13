@@ -12,8 +12,8 @@ class PaymentSummary extends StatefulWidget {
   final String town;
   final String district;
   final String pincode;
-  final String state;
   final String phoneNumber;
+  final String AltphoneNumber;
 
   const PaymentSummary({
     Key? key,
@@ -23,8 +23,8 @@ class PaymentSummary extends StatefulWidget {
     required this.town,
     required this.district,
     required this.pincode,
-    required this.state,
     required this.phoneNumber,
+    required this.AltphoneNumber,
   }) : super(key: key);
 
   @override
@@ -53,7 +53,7 @@ class _PaymentSummaryState extends State<PaymentSummary> {
         ", " +
         widget.district +
         ", " +
-        widget.state +
+        "TamilNadu" +
         " - " +
         widget.pincode;
     _CartStream = FirebaseFirestore.instance
@@ -268,6 +268,7 @@ class _PaymentSummaryState extends State<PaymentSummary> {
                     Address: Address,
                     Name: widget.name,
                     PhoneNumber: widget.phoneNumber,
+                    AltPhoneNumber: widget.AltphoneNumber,
                   ),
                 ],
               ),

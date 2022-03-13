@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:like_button/like_button.dart';
 import 'package:lottie/lottie.dart';
+import 'package:paginate_firestore/paginate_firestore.dart';
 import 'package:random_string/random_string.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -132,21 +133,29 @@ class _ProductHorizontalListState extends State<ProductHorizontalList> {
     );
   }
 
-  bool isLiked = false;
-
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot>(
-      stream: widget.stream,
-      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-        if (snapshot.hasError) {
-          return Text('Something went wrong');
-        }
-
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          print("Some problem is occured in the connetion state");
-          return Center(
-            child: Container(),
+    return PaginateFirestore(
+      query: widget.stream,
+      itemBuilderType: PaginateBuilderType.gridView,
+      itemBuilder: (context, documentSnapshots, index) {
+        if (documentSnapshots.length == 0) {
+          print("No Items Found");
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                height: 100,
+              ),
+              Text(
+                "No Items Found",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
           );
         }
 
@@ -156,12 +165,13 @@ class _ProductHorizontalListState extends State<ProductHorizontalList> {
             scrollDirection: Axis.vertical,
             gridDelegate: new SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              mainAxisExtent: 245,
+              mainAxisExtent: 270,
             ),
             shrinkWrap: true,
-            itemCount: snapshot.data!.docs.length,
+            itemCount: documentSnapshots.length,
             itemBuilder: (context, index) {
-              DocumentSnapshot data = snapshot.data!.docs[index];
+              final data = documentSnapshots[index].data() as Map?;
+              String likes = data!['likes'].toString();
               return SlideTransition(
                 position: Tween<Offset>(
                   begin: Offset(0, 0.5 * index + 1),
@@ -184,16 +194,15 @@ class _ProductHorizontalListState extends State<ProductHorizontalList> {
                         borderRadius: BorderRadius.all(Radius.circular(15.0)),
                       ),
                       child: Padding(
-                        padding: EdgeInsets.all(10),
+                        padding: EdgeInsets.all(6),
                         child: Column(
                           children: [
                             Hero(
                               tag: "producthome" + index.toString(),
                               child: GestureDetector(
                                 onTap: () {
-                                  var docId = snapshot
-                                      .data!.docs[index].reference.id
-                                      .toString();
+                                  final docId =
+                                      documentSnapshots[index].id.toString();
                                   print(docId);
                                   Get.to(
                                     ProductOverview(
@@ -202,108 +211,235 @@ class _ProductHorizontalListState extends State<ProductHorizontalList> {
                                     ),
                                   );
                                 },
-                                child: Image.network(
-                                  data['imgUrl'][0],
-                                  height: 130,
+                                child: Stack(
+                                  children: [
+                                    Container(
+                                      height: 180,
+                                      width:
+                                          (MediaQuery.of(context).size.width /
+                                                  2) -
+                                              24,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(15.0)),
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(15.0)),
+                                        child: data['imgUrl'] != null
+                                            ? Image.network(
+                                                data['imgUrl'][0],
+                                                fit: BoxFit.fill,
+                                              )
+                                            : Image.asset(
+                                                "assets/no-image.png"),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      top: 5,
+                                      left: 5,
+                                      child: Container(
+                                        padding: EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: Colors.pinkAccent,
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(14)),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            LikeButton(
+                                              // isLiked: isLiked,
+                                              onTap: (isLiked) async {
+                                                print(likes);
+                                                Future.delayed(Duration(
+                                                        milliseconds: 100))
+                                                    .then((_) {
+                                                  setState(() {
+                                                    likes =
+                                                        (int.parse(likes) + 1)
+                                                            .toString();
+                                                    print(likes);
+                                                  });
+                                                  final docId =
+                                                      documentSnapshots[index]
+                                                          .id
+                                                          .toString();
+                                                  FirebaseFirestore.instance
+                                                      .collection("Products")
+                                                      .doc(docId)
+                                                      .update({
+                                                    "likes": likes,
+                                                  });
+                                                  print(likes);
+                                                  final snackBar = SnackBar(
+                                                    duration:
+                                                        Duration(seconds: 1),
+                                                    content:
+                                                        const Text('Liked 👍'),
+                                                    backgroundColor:
+                                                        (Colors.pinkAccent),
+                                                  );
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(snackBar);
+                                                });
+                                                return !isLiked;
+                                              },
+                                              likeBuilder: (bool isLiked) {
+                                                return Icon(
+                                                  FontAwesomeIcons.heart,
+                                                  color: isLiked
+                                                      ? Colors.white
+                                                      : Colors.white,
+                                                  size: 14,
+                                                );
+                                              },
+                                              bubblesColor: BubblesColor(
+                                                  dotPrimaryColor: Colors.white,
+                                                  dotSecondaryColor:
+                                                      Colors.white,
+                                                  dotThirdColor:
+                                                      Color(0xFFFF5722),
+                                                  dotLastColor:
+                                                      Color(0xFFF44336)),
+                                              size: 12,
+                                            ),
+                                            SizedBox(
+                                              width: 5,
+                                            ),
+                                            Text(
+                                              data['likes'],
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 10,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
                             Container(
-                              padding: EdgeInsets.only(left: 6),
+                              padding: EdgeInsets.only(left: 4, top: 3),
                               alignment: Alignment.bottomLeft,
                               child: Text(
                                 data['title'].toString().length < 20
                                     ? data['title'].toString()
-                                    : data['title']
-                                            .toString()
-                                            .substring(0, 20) +
-                                        "..",
+                                    : data['title'].toString().substring(0, 20),
                                 style: TextStyle(
                                   color: Colors.black,
                                   fontSize: 15,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
-                            Spacer(),
                             Padding(
                               padding:
                                   const EdgeInsets.symmetric(vertical: 4.0),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Container(
-                                    padding: EdgeInsets.only(left: 6),
-                                    alignment: Alignment.bottomLeft,
-                                    child: Row(
-                                      children: [
-                                        Text(
-                                          "₹",
-                                          style: TextStyle(
-                                            color: Color.fromARGB(
-                                                255, 46, 170, 52),
-                                            fontSize: 16,
-                                            fontFamily: "Roboto",
-                                            fontWeight: FontWeight.w500,
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Column(
+                                            children: [
+                                              SizedBox(
+                                                height: 1.5,
+                                              ),
+                                              Text(
+                                                "₹",
+                                                style: TextStyle(
+                                                  color: Color.fromARGB(
+                                                      255, 46, 170, 52),
+                                                  fontSize: 13,
+                                                  fontFamily: "Roboto",
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        ),
-                                        Text(
-                                          data['price'],
-                                          style: TextStyle(
-                                            color: Color.fromARGB(
-                                                255, 46, 170, 52),
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w500,
+                                          Text(
+                                            data['price'],
+                                            textAlign: TextAlign.end,
+                                            style: TextStyle(
+                                              height: 1,
+                                              color: Color.fromARGB(
+                                                  255, 46, 170, 52),
+                                              fontSize: 20,
+                                              fontFamily: "Roboto",
+                                              fontWeight: FontWeight.w500,
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
+                                        ],
+                                      ),
+                                      SizedBox(
+                                        width: 5,
+                                      ),
+                                      Row(
+                                        children: [
+                                          Text(
+                                            "SAVE : ",
+                                            style: TextStyle(
+                                              height: 0.8,
+                                              color: Colors.black,
+                                              fontSize: 12,
+                                              fontFamily: "Roboto",
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          Text(
+                                            "₹",
+                                            style: TextStyle(
+                                              // height : 0.8,
+                                              color: Colors.red,
+                                              fontSize: 10,
+                                              fontFamily: "Roboto",
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          Text(
+                                            data['offer'],
+                                            style: TextStyle(
+                                              // height : 0.8,
+                                              color: Colors.red,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
-                                  CircleAvatar(
-                                    backgroundColor: Colors.pinkAccent,
-                                    radius: 16,
-                                    child: LikeButton(
-                                      onTap: (isLiked) async {
-                                        // this.isLiked = !isLiked;
-                                        Future.delayed(
-                                                Duration(milliseconds: 100))
-                                            .then((_) {
-                                          var docId = snapshot
-                                              .data!.docs[index].reference.id
-                                              .toString();
-                                          gettingData(docId: docId);
-                                          // Add to the favourite
-                                          print("Added to the favourite");
-                                          final snackBar = SnackBar(
-                                            duration: Duration(seconds: 1),
-                                            content: const Text(
-                                                'Added to our Favourites'),
-                                            backgroundColor:
-                                                (Colors.pinkAccent),
-                                          );
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(snackBar);
-                                        });
-                                        return !isLiked;
-                                      },
-                                      likeBuilder: (bool isLiked) {
-                                        return Icon(
-                                          FontAwesomeIcons.heart,
-                                          color: isLiked
-                                              ? Colors.white
-                                              : Colors.white,
-                                          size: 16,
-                                        );
-                                      },
-                                      bubblesColor: BubblesColor(
-                                          dotPrimaryColor: Colors.white,
-                                          dotSecondaryColor: Colors.white,
-                                          dotThirdColor: Color(0xFFFF5722),
-                                          dotLastColor: Color(0xFFF44336)),
-                                      size: 14,
-                                    ),
-                                  )
+                                  Row(
+                                    children: [
+                                      Text(
+                                        "MRP : ",
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      Text(
+                                        "₹" + data['MRP'],
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w400,
+                                          decoration:
+                                              TextDecoration.lineThrough,
+                                          fontFamily: "Roboto ",
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),
@@ -324,27 +460,3 @@ class _ProductHorizontalListState extends State<ProductHorizontalList> {
   }
 }
 
-Widget ShimmerContainerLarge() {
-  return SizedBox(
-    height: 220,
-    child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        shrinkWrap: true,
-        itemCount: 10,
-        itemBuilder: (context, index) {
-          return Shimmer.fromColors(
-            baseColor: (Colors.grey[300])!,
-            highlightColor: (Colors.grey[200])!,
-            child: Container(
-              padding: EdgeInsets.only(top: 4),
-              margin: EdgeInsets.all(8),
-              width: 140,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: Colors.grey[300],
-              ),
-            ),
-          );
-        }),
-  );
-}

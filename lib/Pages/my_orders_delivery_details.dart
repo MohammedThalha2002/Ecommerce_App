@@ -244,9 +244,23 @@ class _OrderedHistoryState extends State<OrderedHistory> {
                           Text(data['title']),
                           Row(
                             children: [
-                              SizedBox(
-                                width: 10,
+                              Text(
+                                "Colour : ",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
                               ),
+                              Text(
+                                data['color'],
+                                style: TextStyle(
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
                               Row(
                                 children: [
                                   Text(
@@ -266,23 +280,27 @@ class _OrderedHistoryState extends State<OrderedHistory> {
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
-                                  Container(
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 4),
-                                    margin: EdgeInsets.all(4),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(14),
-                                      color: Colors.pinkAccent[100],
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(1),
-                                      child: Text(
-                                        data['size'],
-                                        style: TextStyle(
-                                            color: Colors.white, fontSize: 12),
-                                      ),
-                                    ),
-                                  ),
+                                  data['size'] != "Free"
+                                      ? Container(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 4),
+                                          margin: EdgeInsets.all(4),
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(14),
+                                            color: Colors.pinkAccent[100],
+                                          ),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(1),
+                                            child: Text(
+                                              data['size'],
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 12),
+                                            ),
+                                          ),
+                                        )
+                                      : Container(),
                                 ],
                               ),
                             ],

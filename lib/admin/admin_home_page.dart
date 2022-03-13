@@ -27,12 +27,12 @@ class _AdminPanelState extends State<AdminPanel>
   //For T-shirts
   final Stream<QuerySnapshot> _SareeStream = FirebaseFirestore.instance
       .collection('Products')
-      .where('category', isEqualTo: 'Saree')
+      .where('category', isEqualTo: 'Cotton_saree')
       .snapshots();
   //For Chudis
   final Stream<QuerySnapshot> _ChudithaarStream = FirebaseFirestore.instance
       .collection('Products')
-      .where('category', isEqualTo: 'Chudi')
+      .where('category', isEqualTo: 'Chudihtaar')
       .snapshots();
 
   var stream;

@@ -1,5 +1,6 @@
 import 'package:animated_button/animated_button.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:ecommerce/Pages/payment_summary.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -72,9 +73,15 @@ class _DeliveryDetailsState extends State<DeliveryDetails> {
           name = data['Name'].toString();
           nameController.text = name;
           print(name);
+          //
           phoneNumber = data['phone_number'].toString();
           print(phoneNumber);
           phoneNoController.text = phoneNumber;
+          //
+          AltphoneNumber = data['Alt_phone_number'].toString();
+          print(phoneNumber);
+          AltphoneNoController.text = AltphoneNumber;
+          //
           houseNo = data['house_no'].toString();
           houseNoController.text = houseNo;
           // print(price);
@@ -85,13 +92,10 @@ class _DeliveryDetailsState extends State<DeliveryDetails> {
           townController.text = town;
           // print(sizeList);
           district = data['District'];
-          districtController.text = district;
+          print(district);
           // print(sizeList);
           pincode = data['pincode'];
           pincodeController.text = pincode;
-          // print(sizeList);
-          state = data['state'];
-          stateController.text = state;
         });
       } else {
         print('Document does not exist on the database');
@@ -107,29 +111,29 @@ class _DeliveryDetailsState extends State<DeliveryDetails> {
         street != null &&
         town != null &&
         district != null &&
-        pincode != null &&
-        state != null) {
+        pincode != null) {
       return _userRef.doc(_user!.uid).collection("Details").doc("Address").set({
         "Name": name,
         "phone_number": phoneNumber,
+        "Alt_phone_number": AltphoneNumber,
         "house_no": houseNo,
         "Street": street,
         "Town": town,
         "District": district,
         "pincode": pincode,
-        "state": state,
       }).whenComplete(
         () => Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => PaymentSummary(
-                name: name,
-                houseNo: houseNo,
-                street: street,
-                town: town,
-                district: district,
-                pincode: pincode,
-                state: state,
-                phoneNumber: phoneNumber),
+              name: name,
+              houseNo: houseNo,
+              street: street,
+              town: town,
+              district: district,
+              pincode: pincode,
+              phoneNumber: phoneNumber,
+              AltphoneNumber: AltphoneNumber,
+            ),
           ),
         ),
       );
@@ -141,22 +145,31 @@ class _DeliveryDetailsState extends State<DeliveryDetails> {
   //variables
   String name = '';
   String phoneNumber = '';
+  String AltphoneNumber = '';
   String houseNo = '';
   String street = '';
   String town = '';
   String district = '';
   String pincode = '';
-  String state = '';
 
   //Controllers
   TextEditingController nameController = TextEditingController();
   TextEditingController phoneNoController = TextEditingController();
+  TextEditingController AltphoneNoController = TextEditingController();
   TextEditingController houseNoController = TextEditingController();
   TextEditingController streetController = TextEditingController();
   TextEditingController townController = TextEditingController();
-  TextEditingController districtController = TextEditingController();
   TextEditingController pincodeController = TextEditingController();
-  TextEditingController stateController = TextEditingController();
+
+  //
+  String? DistrictValue;
+  String? _chosenValue;
+  List<String> Districts = [
+    'Chennai',
+    'Tiruvallur',
+    'Chengalpattu',
+    'Kancheepuram',
+  ];
 
   //Validating our forms
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -333,43 +346,88 @@ class _DeliveryDetailsState extends State<DeliveryDetails> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextFormField(
-                    controller: districtController,
-                    maxLength: 30,
-                    keyboardType: TextInputType.name,
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return 'District cannot be empty !';
-                      }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                      prefixIcon: Icon(
-                        Icons.location_on,
-                        color: Colors.pink,
+                  padding: const EdgeInsets.all(8),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton2(
+                      isExpanded: true,
+                      hint: Row(
+                        children: [
+                          Icon(
+                            Icons.location_on,
+                            color: Colors.pink,
+                          ),
+                          SizedBox(
+                            width: 12,
+                          ),
+                          Expanded(
+                              child: district == ""
+                                  ? Text(
+                                      "District",
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    )
+                                  : Text(
+                                      district,
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    )),
+                        ],
                       ),
-                      counterText: "",
-                      hintText: "District",
-                      disabledBorder: OutlineInputBorder(),
-                      border: OutlineInputBorder(
+                      items: Districts.map((item) => DropdownMenuItem<String>(
+                            value: item,
+                            child: Text(
+                              item,
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 16,
+                              ),
+                            ),
+                          )).toList(),
+                      value: DistrictValue,
+                      onChanged: (value) {
+                        setState(() {
+                          district = value as String;
+                        });
+                      },
+                      icon: Icon(Icons.arrow_downward),
+                      iconSize: 20,
+                      buttonWidth: double.infinity,
+                      buttonPadding: const EdgeInsets.all(12),
+                      buttonDecoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(
+                          color: Colors.grey,
+                        ),
                         borderRadius: BorderRadius.circular(10),
                       ),
+                      buttonElevation: 0,
+                      itemHeight: 40,
+                      itemPadding: const EdgeInsets.only(left: 14, right: 14),
+                      dropdownMaxHeight: 200,
+                      dropdownWidth: 300,
+                      dropdownPadding: null,
+                      dropdownDecoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: Colors.white,
+                      ),
+                      dropdownElevation: 8,
+                      scrollbarRadius: const Radius.circular(40),
+                      scrollbarThickness: 6,
+                      scrollbarAlwaysShow: true,
                     ),
-                    onChanged: (value) {
-                      district = value;
-                    },
                   ),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: TextFormField(
                     controller: pincodeController,
-                    maxLength: 30,
+                    maxLength: 6,
                     keyboardType: TextInputType.number,
                     style: TextStyle(
                       fontSize: 17,
@@ -395,39 +453,6 @@ class _DeliveryDetailsState extends State<DeliveryDetails> {
                     ),
                     onChanged: (value) {
                       pincode = value;
-                    },
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextFormField(
-                    controller: stateController,
-                    maxLength: 30,
-                    keyboardType: TextInputType.name,
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return 'State cannot be empty !';
-                      }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                      prefixIcon: Icon(
-                        Icons.adjust_rounded,
-                        color: Colors.pink,
-                      ),
-                      counterText: "",
-                      hintText: "State",
-                      disabledBorder: OutlineInputBorder(),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    onChanged: (value) {
-                      state = value;
                     },
                   ),
                 ),
@@ -461,6 +486,39 @@ class _DeliveryDetailsState extends State<DeliveryDetails> {
                     ),
                     onChanged: (value) {
                       phoneNumber = value;
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextFormField(
+                    controller: AltphoneNoController,
+                    maxLength: 30,
+                    keyboardType: TextInputType.number,
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Phone Number cannot be empty !';
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      prefixIcon: Icon(
+                        Icons.phone_iphone,
+                        color: Colors.pink,
+                      ),
+                      counterText: "",
+                      hintText: "Alternative Phone Number",
+                      disabledBorder: OutlineInputBorder(),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    onChanged: (value) {
+                      AltphoneNumber = value;
                     },
                   ),
                 ),

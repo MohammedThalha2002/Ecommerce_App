@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 
 //Uploads Products to the Firestore Cloud
 class Products {
@@ -43,16 +42,4 @@ class Products {
   }
 }
 
-// Uploads Images to the Firebase Storage
-class FirebaseApi {
-  static UploadTask? uploadFile(String destination, File file) {
-    try {
-      final ref = FirebaseStorage.instance.ref(destination);
-      return ref.putFile(file);
-    } on FirebaseException catch (e) {
-      // TODO
-      print("Error......................");
-      return null;
-    }
-  }
-}
+

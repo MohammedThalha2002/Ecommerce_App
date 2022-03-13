@@ -1,9 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ecommerce/Pages/Product_home_page.dart';
 import 'package:ecommerce/Pages/widgets/product_image_fullView.dart';
 import 'package:ecommerce/widgets/no_internet.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:like_button/like_button.dart';
 import 'package:random_string/random_string.dart';
@@ -49,6 +52,7 @@ class _ProductOverviewState extends State<ProductOverview> {
         "size": selectedSize,
         "category": category,
         "quantity": "1",
+        "color": color,
       },
     );
   }
@@ -73,7 +77,10 @@ class _ProductOverviewState extends State<ProductOverview> {
   //Required Variables
   String title = "",
       desc = "",
+      color = "",
       price = "",
+      MRP = "",
+      offer = "",
       selectedSize = "",
       category = '',
       likes = '';
@@ -141,12 +148,32 @@ class _ProductOverviewState extends State<ProductOverview> {
       print(selectedSize);
       likes = data['likes'].toString();
       print(likes);
+      color = data['color'].toString();
+      print(color);
+      MRP = data['MRP'].toString();
+      print(MRP);
+      offer = data['offer'].toString();
+      print(offer);
     });
     Future.delayed(Duration(milliseconds: 1000), () {
       setState(() {
         isloading = false;
       });
     });
+    checkingIsItaSaree();
+  }
+
+  bool checkingIsItaSaree() {
+    if (category == "Poonam_saree" ||
+        category == "Cotton_saree" ||
+        category == "Silk_saree") {
+      setState(() {
+        selectedSize = "Free";
+      });
+      return false;
+    } else {
+      return true;
+    }
   }
 
   @override
@@ -164,84 +191,12 @@ class _ProductOverviewState extends State<ProductOverview> {
                   padding: const EdgeInsets.only(
                     left: 20,
                     right: 20,
-                    top: 10,
                   ),
                   child: SingleChildScrollView(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       // shrinkWrap : true,
                       children: [
-                        Text(
-                          title,
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "₹" + price,
-                              style: TextStyle(
-                                color: Colors.green,
-                                fontSize: 20,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                            Row(
-                              children: [
-                                LikeButton(
-                                  isLiked: isLiked,
-                                  onTap: (isLiked) async {
-                                    setState(() {
-                                      this.isLiked = !isLiked;
-                                    });
-                                    print(this.isLiked);
-                                    Future.delayed(Duration(milliseconds: 100))
-                                        .then((_) {
-                                      setState(() {
-                                        if (this.isLiked) {
-                                          likes =
-                                              (int.parse(likes) + 1).toString();
-                                        } else {
-                                          likes =
-                                              (int.parse(likes) - 1).toString();
-                                        }
-                                      });
-                                      FirebaseFirestore.instance
-                                          .collection("Products")
-                                          .doc(widget.docId)
-                                          .update({
-                                        "likes": likes,
-                                      });
-                                      print("Liked");
-                                    });
-                                    return !isLiked;
-                                  },
-                                  likeBuilder: (bool isLiked) {
-                                    return Icon(
-                                      Icons.favorite,
-                                      color:
-                                          isLiked ? Colors.pink : Colors.grey,
-                                      size: 22,
-                                    );
-                                  },
-                                  bubblesColor: BubblesColor(
-                                      dotPrimaryColor: Colors.white,
-                                      dotSecondaryColor: Colors.white,
-                                      dotThirdColor: Color(0xFFFF5722),
-                                      dotLastColor: Color(0xFFF44336)),
-                                  size: 22,
-                                ),
-                                SizedBox(
-                                  width: 3,
-                                ),
-                                Text(likes),
-                              ],
-                            ),
-                          ],
-                        ),
                         SizedBox(
                           height: 10,
                         ),
@@ -378,58 +333,185 @@ class _ProductOverviewState extends State<ProductOverview> {
                             }),
                           ),
                         ),
-                        Text(
-                          "Available Sizes",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                        Text(
-                          "Select yor size",
-                          style: TextStyle(),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Wrap(
-                              children: [
-                                for (var i = 0; i < sizeList.length; i++)
-                                  GestureDetector(
-                                    onTap: () => setState(() {
-                                      print(i);
-                                      isSelected = i;
-                                      selectedSize = sizeList[isSelected];
-                                      print(selectedSize);
-                                    }),
-                                    child: Container(
-                                      padding:
-                                          EdgeInsets.symmetric(horizontal: 10),
-                                      margin: EdgeInsets.all(4),
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(14),
-                                        color: isSelected == i
-                                            ? Colors.pinkAccent
-                                            : Colors.grey[350],
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(4),
-                                        child: Text(sizeList[i]),
-                                      ),
+                        Container(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "PRICE : ",
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
-                              ],
+                                  Text(
+                                    "₹",
+                                    style: TextStyle(
+                                      color: Colors.green,
+                                      fontSize: 20,
+                                      fontFamily: "Roboto",
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  Text(
+                                    price,
+                                    style: TextStyle(
+                                      color: Colors.green,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    "SAVE : ",
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  Text(
+                                    "₹",
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                      fontSize: 20,
+                                      fontFamily: "Roboto",
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  Text(
+                                    offer,
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    "MRP : ",
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  Text(
+                                    "₹" + MRP,
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w400,
+                                      decoration: TextDecoration.lineThrough,
+                                      fontFamily: "Roboto ",
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(
+                          height: 15,
+                        ),
+                        Text(
+                          "Product : " + title,
+                          style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        SizedBox(
+                          height: 8,
+                        ),
+                        Row(
+                          children: [
+                            Text(
+                              "Colour",
+                              style: TextStyle(
+                                fontSize: 20,
+                                decoration: TextDecoration.underline,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ],
                         ),
-                        SizedBox(
-                          height: 10,
-                        ),
                         Text(
-                          "About this Product",
+                          color,
+                          style: TextStyle(
+                            fontSize: 16,
+                          ),
+                        ),
+                        SizedBox(
+                          height: 5,
+                        ),
+                        checkingIsItaSaree()
+                            ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Available Sizes",
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w500,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                  Text(
+                                    "Select your size",
+                                    style: TextStyle(),
+                                  ),
+                                  Wrap(
+                                    children: [
+                                      for (var i = 0; i < sizeList.length; i++)
+                                        GestureDetector(
+                                          onTap: () => setState(() {
+                                            print(i);
+                                            isSelected = i;
+                                            selectedSize = sizeList[isSelected];
+                                            print(selectedSize);
+                                          }),
+                                          child: Container(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 10),
+                                            margin: EdgeInsets.all(4),
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(14),
+                                              color: isSelected == i
+                                                  ? Colors.pinkAccent
+                                                  : Colors.grey[350],
+                                            ),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(4),
+                                              child: Text(sizeList[i]),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                  SizedBox(
+                                    height: 10,
+                                  ),
+                                ],
+                              )
+                            : Container(),
+                        Text(
+                          "ABOUT THIS PRODUCT",
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w400,
+                            decoration: TextDecoration.underline,
                           ),
                         ),
                         SizedBox(
@@ -462,8 +544,18 @@ class _ProductOverviewState extends State<ProductOverview> {
                               message: "Added to your Whishlist",
                               backgroundColor: Colors.pinkAccent,
                             ),
-                            displayDuration: Duration(seconds: 1),
+                            displayDuration: Duration(milliseconds: 800),
+                            hideOutAnimationDuration:
+                                Duration(milliseconds: 200),
+                            showOutAnimationDuration:
+                                Duration(milliseconds: 800),
                           );
+                          Future.delayed(Duration(milliseconds: 1500), () {
+                            Get.to(
+                              HomePage(),
+                              transition: Transition.native,
+                            );
+                          });
                         },
                         child: Container(
                           height: 50,
@@ -505,8 +597,18 @@ class _ProductOverviewState extends State<ProductOverview> {
                               message: "Added to your Cart",
                               backgroundColor: Colors.pinkAccent,
                             ),
-                            displayDuration: Duration(seconds: 1),
+                            displayDuration: Duration(milliseconds: 800),
+                            hideOutAnimationDuration:
+                                Duration(milliseconds: 200),
+                            showOutAnimationDuration:
+                                Duration(milliseconds: 800),
                           );
+                          Future.delayed(Duration(milliseconds: 1500), () {
+                            Get.to(
+                              HomePage(),
+                              transition: Transition.native,
+                            );
+                          });
                         },
                         child: Container(
                           height: 50,

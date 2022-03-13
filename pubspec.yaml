@@ -15,7 +15,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.0+2
+version: 1.0.0+6
 
 environment:
   sdk: ">=2.16.0-134.0.dev <3.0.0"
@@ -41,10 +41,6 @@ dependencies:
   firebase_auth: ^3.3.4
   firebase_core: ^1.10.6
   cloud_firestore: ^3.1.6
-  firebase_storage: ^10.2.5
-  firebase_database: ^9.0.5
-  firebase_messaging: ^11.2.5
-  firestore_search: ^0.1.9
 
   # Local Notification
   flutter_local_notifications: ^9.2.0
@@ -56,9 +52,9 @@ dependencies:
   #Others
   lottie: ^1.2.1
   animated_button: ^0.2.0
+  dropdown_button2: ^1.1.1
   like_button: ^2.0.4
   rflutter_alert: ^2.0.4
-  image_picker: ^0.8.4+4
   random_string: ^2.3.1
   font_awesome_flutter: ^9.2.0
   shimmer: ^2.0.0
@@ -66,9 +62,14 @@ dependencies:
   top_snackbar_flutter: ^1.0.2
   onesignal_flutter: ^3.2.8
   http: ^0.13.4
+  url_launcher: ^6.0.20
+  flutter_typeahead: ^3.2.4
+  cached_network_image: ^3.2.0
 
   #Statemanagement
   get: ^4.6.1
+  advanced_search: ^2.0.0
+  paginate_firestore: ^1.0.3
 
 dev_dependencies:
   flutter_test:
@@ -119,6 +120,11 @@ flutter:
         - asset: fonts/Poppins-Regular.ttf
         - asset: fonts/Poppins-Medium.ttf
         - asset: fonts/Poppins-Bold.ttf
+    - family: Montserrat
+      fonts:
+        - asset: fonts/Montserrat-Regular.ttf
+        - asset: fonts/Montserrat-Medium.ttf
+        - asset: fonts/Montserrat-Bold.ttf
   #         style: italic
   #   - family: Trajan Pro
   #     fonts:

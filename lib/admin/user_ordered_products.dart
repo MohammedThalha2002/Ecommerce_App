@@ -121,7 +121,12 @@ class _UserOrderedProductsState extends State<UserOrderedProducts> {
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
-                                      Text(data['PhoneNumber']),
+                                      Row(
+                                        children: [
+                                          Text(data['PhoneNumber'] + " , "),
+                                          Text(data['AltPhoneNumber']),
+                                        ],
+                                      ),
                                       Text(data['Email']),
                                       Text(data['Address']),
                                     ],
@@ -166,9 +171,23 @@ class _UserOrderedProductsState extends State<UserOrderedProducts> {
                                       Text(data['title']),
                                       Row(
                                         children: [
-                                          SizedBox(
-                                            width: 10,
+                                          Text(
+                                            "Colour : ",
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: 14,
+                                            ),
                                           ),
+                                          Text(
+                                            data["color"],
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
                                           Row(
                                             children: [
                                               Text(
@@ -188,28 +207,36 @@ class _UserOrderedProductsState extends State<UserOrderedProducts> {
                                                   fontWeight: FontWeight.w500,
                                                 ),
                                               ),
-                                              Container(
-                                                padding: EdgeInsets.symmetric(
-                                                    horizontal: 4),
-                                                margin: EdgeInsets.all(4),
-                                                decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(14),
-                                                  color: Colors.pinkAccent[100],
-                                                ),
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(1),
-                                                  child: Text(
-                                                    data['size'],
-                                                    style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 15),
-                                                  ),
-                                                ),
-                                              ),
+                                              data['size'] != "Free"
+                                                  ? Container(
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                              horizontal: 4),
+                                                      margin: EdgeInsets.all(4),
+                                                      decoration: BoxDecoration(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(14),
+                                                        color: Colors
+                                                            .pinkAccent[100],
+                                                      ),
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(1),
+                                                        child: Text(
+                                                          data['size'],
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Colors.white,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              fontSize: 15),
+                                                        ),
+                                                      ),
+                                                    )
+                                                  : Container(),
                                             ],
                                           ),
                                         ],

@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce/Pages/Product_home_page.dart';
 import 'package:ecommerce/Pages/delivery_details.dart';
@@ -7,7 +6,6 @@ import 'package:ecommerce/Pages/product_overview.dart';
 import 'package:ecommerce/Pages/widgets/cart_Listview.dart';
 import 'package:ecommerce/widgets/no_internet.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
@@ -27,7 +25,6 @@ class _MyCartState extends State<MyCart> with SingleTickerProviderStateMixin {
       FirebaseFirestore.instance.collection("Users");
   // Current User Id
   User? _user = FirebaseAuth.instance.currentUser;
-  late FirebaseMessaging messaging;
   var _CartStream;
   var _totalPrice;
   int FirstprintingPrice = 0;

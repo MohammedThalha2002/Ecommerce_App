@@ -4,12 +4,15 @@ import 'package:ecommerce/widgets/no_internet.dart';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce/backend/crud.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:get/get.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:lottie/lottie.dart';
 import 'package:random_string/random_string.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:top_snackbar_flutter/custom_snack_bar.dart';
+import 'package:top_snackbar_flutter/top_snack_bar.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AdminAddProducts extends StatefulWidget {
   const AdminAddProducts({Key? key}) : super(key: key);
@@ -20,13 +23,11 @@ class AdminAddProducts extends StatefulWidget {
 
 class _AdminAddProductsState extends State<AdminAddProducts>
     with SingleTickerProviderStateMixin {
-  late String title, desc, price, category;
+  late String title, desc, price, category, color, MRP, offer;
   var ProductImage1, ProductImage2, ProductImage3, ProductImage4;
   int selectedImage = 0;
   List<String> ImageUrlsFullList = [];
-  List<File> _image = [];
   List sizeList = [];
-  UploadTask? task;
   var ImgUrl;
 
   // TextEditingController titleCont = new TextEditingController();
@@ -36,22 +37,6 @@ class _AdminAddProductsState extends State<AdminAddProducts>
 
   // Accessing the image from our gallery
   //Initialization
-  final ImagePicker picker = ImagePicker();
-  // Calling a function
-  Future pickImage() async {
-    final XFile? pickedFile =
-        await picker.pickImage(source: ImageSource.gallery);
-    setState(() {
-      _image.add(File(pickedFile!.path));
-    });
-    if (pickedFile!.path == null) {
-      retrieveLostData();
-    }
-  }
-
-  Future<void> retrieveLostData() async {
-    final LostData response = await picker.getLostData();
-  }
 
   int isSelected = 0;
   //Size isSlected variable
@@ -60,8 +45,10 @@ class _AdminAddProductsState extends State<AdminAddProducts>
       CCSel3 = false,
       CCSel4 = false,
       CCSel5 = false,
-      CCSel6 = false;
+      CCSel6 = false,
+      CCSel7 = false;
 
+  bool uploading = false;
   // Validating our form
   void validate() {
     if (formKey.currentState!.validate()) {
@@ -71,44 +58,17 @@ class _AdminAddProductsState extends State<AdminAddProducts>
       });
       updateValues();
     } else {
+      showTopSnackBar(
+          context,
+          CustomSnackBar.error(
+            message: "Please Enter all the fields",
+            backgroundColor: Colors.redAccent,
+          ),
+          showOutAnimationDuration: Duration(milliseconds: 1000),
+          displayDuration: Duration(seconds: 1),
+          hideOutAnimationDuration: Duration(milliseconds: 1000));
       print("Not Validated");
     }
-  }
-
-  double val = 0;
-  Reference? ref;
-  bool uploading = false;
-  //Uploading our new product to the firebase
-  Future uploadImages() async {
-    int i = 1;
-    if (_image != null &&
-        title != null &&
-        desc != null &&
-        price != null &&
-        category != null) {
-      for (var img in _image) {
-        setState(() {
-          val = i / _image.length;
-        });
-        ref = FirebaseStorage.instance
-            .ref()
-            .child("images/${randomAlphaNumeric(5)}");
-        await ref?.putFile(img).whenComplete(() async {
-          await ref?.getDownloadURL().then((value) async {
-            //Adding to the Image url list
-            i++;
-            addingImgUrls(value);
-          });
-        });
-      }
-    }
-    print(ImageUrlsFullList);
-  }
-
-  Future addingImgUrls(url) async {
-    setState(() {
-      ImageUrlsFullList.add(url);
-    });
   }
 
   Future _addToCart() async {
@@ -116,11 +76,15 @@ class _AdminAddProductsState extends State<AdminAddProducts>
     return await FirebaseFirestore.instance.collection("Products").add({
       "title": title,
       "description": desc,
+      "color": color,
       "price": price,
+      "MRP": MRP,
+      "offer": offer,
       "size": sizeList,
       "category": category,
       "imgUrl": ImageUrlsFullList,
-      "likes" : 0,
+      "likes": 0.toString(),
+      "quantity": "1",
     }).then((value) {
       setState(() {
         ImageUrlsFullList.clear();
@@ -133,15 +97,23 @@ class _AdminAddProductsState extends State<AdminAddProducts>
   // Controllers
   late AnimationController lottieController;
   TextEditingController titleController = TextEditingController();
+  TextEditingController colorController = TextEditingController();
   TextEditingController descController = TextEditingController();
   TextEditingController priceController = TextEditingController();
+  TextEditingController MrpController = TextEditingController();
+  TextEditingController offerController = TextEditingController();
+  TextEditingController UrlController = TextEditingController();
 
   void updateValues() {
     setState(() {
       title = titleController.text;
+      color = colorController.text;
       desc = descController.text;
       price = priceController.text;
+      MRP = MrpController.text;
+      offer = offerController.text;
     });
+    _addToCart();
   }
 
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -169,10 +141,15 @@ class _AdminAddProductsState extends State<AdminAddProducts>
     });
   }
 
+  void _launchURL(String _url) async {
+    if (!await launch(_url)) throw 'Could not launch $_url';
+  }
+
   @override
   void initState() {
     // For Checking te internet
     checkConnection();
+
     // using this listiner, you can get the medium of connection as well.
     lottieController = AnimationController(vsync: this, duration: Duration());
     lottieController.addStatusListener(
@@ -209,15 +186,6 @@ class _AdminAddProductsState extends State<AdminAddProducts>
         ),
         body: Stack(
           children: [
-            uploading
-                ? Container(
-                    height: MediaQuery.of(context).size.height,
-                    width: MediaQuery.of(context).size.width,
-                    child: Center(
-                      child: Lottie.asset('assets/uploading.json'),
-                    ),
-                  )
-                : Container(),
             SingleChildScrollView(
               child: Padding(
                 padding: EdgeInsets.all(10),
@@ -229,7 +197,7 @@ class _AdminAddProductsState extends State<AdminAddProducts>
                       GridView.builder(
                         physics: NeverScrollableScrollPhysics(),
                         scrollDirection: Axis.vertical,
-                        itemCount: _image.length + 1,
+                        itemCount: ImageUrlsFullList.length + 1,
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 3,
                           mainAxisExtent: 100,
@@ -247,7 +215,67 @@ class _AdminAddProductsState extends State<AdminAddProducts>
                                     child: Center(
                                       child: IconButton(
                                         onPressed: () {
-                                          pickImage();
+                                          _launchURL("https://postimages.org/");
+                                          Alert(
+                                            context: context,
+                                            title: "Add the Copied URL",
+                                            content: Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 40),
+                                              child: TextField(
+                                                controller: UrlController,
+                                                keyboardType: TextInputType.url,
+                                                style: TextStyle(
+                                                  fontSize: 17,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                                decoration: InputDecoration(
+                                                  hintText: "Paste the URL",
+                                                  border: OutlineInputBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            10),
+                                                    borderSide: BorderSide(
+                                                      width: 2,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            buttons: [
+                                              DialogButton(
+                                                child: Text(
+                                                  "Cancel",
+                                                  style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 20),
+                                                ),
+                                                onPressed: () {
+                                                  Navigator.pop(context);
+                                                },
+                                                color: Color.fromARGB(
+                                                    255, 218, 25, 50),
+                                              ),
+                                              DialogButton(
+                                                child: Text(
+                                                  "Ok",
+                                                  style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 20),
+                                                ),
+                                                onPressed: () {
+                                                  ImageUrlsFullList.add(
+                                                      UrlController.text);
+                                                  print(ImageUrlsFullList);
+                                                  Navigator.pop(context);
+                                                  UrlController.clear();
+                                                },
+                                                color: Color.fromRGBO(
+                                                    0, 179, 134, 1.0),
+                                              ),
+                                            ],
+                                          ).show();
                                         },
                                         icon: Icon(
                                           Icons.add_a_photo_rounded,
@@ -261,7 +289,7 @@ class _AdminAddProductsState extends State<AdminAddProducts>
                                   splashColor: Colors.pinkAccent,
                                   onLongPress: () {
                                     setState(() {
-                                      _image.removeAt(index - 1);
+                                      ImageUrlsFullList.removeAt(index - 1);
                                     });
                                   },
                                   child: Padding(
@@ -274,8 +302,8 @@ class _AdminAddProductsState extends State<AdminAddProducts>
                                               Border.all(color: Colors.grey)),
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(14),
-                                        child: Image.file(
-                                          File(_image[index - 1].path),
+                                        child: Image.network(
+                                          ImageUrlsFullList[index - 1],
                                           fit: BoxFit.cover,
                                         ),
                                       ),
@@ -291,7 +319,6 @@ class _AdminAddProductsState extends State<AdminAddProducts>
                         padding: const EdgeInsets.all(8.0),
                         child: TextFormField(
                           controller: titleController,
-                          maxLength: 30,
                           keyboardType: TextInputType.name,
                           style: TextStyle(
                             fontSize: 17,
@@ -318,7 +345,8 @@ class _AdminAddProductsState extends State<AdminAddProducts>
                         child: TextFormField(
                           controller: descController,
                           maxLines: 4,
-                          keyboardType: TextInputType.name,
+                          keyboardType: TextInputType.multiline,
+                          textInputAction: TextInputAction.newline,
                           style: TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w500,
@@ -342,6 +370,30 @@ class _AdminAddProductsState extends State<AdminAddProducts>
                       ),
                       Padding(
                         padding: const EdgeInsets.all(8.0),
+                        child: TextFormField(
+                          controller: colorController,
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          validator: (value) {
+                            if (value!.isEmpty) {
+                              return 'Colour cannot be empty !';
+                            }
+                            return null;
+                          },
+                          decoration: InputDecoration(
+                            counterText: "",
+                            hintText: "Product Colour",
+                            disabledBorder: OutlineInputBorder(),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
                         child: Container(
                           padding: const EdgeInsets.all(8.0),
                           width: MediaQuery.of(context).size.width,
@@ -359,11 +411,25 @@ class _AdminAddProductsState extends State<AdminAddProducts>
                                     style: TextStyle(fontSize: 18),
                                   ),
                                 ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 8.0),
+                                  child: Text(
+                                    "GENS CATEGORY",
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                ),
                                 Wrap(
                                   children: [
                                     GestureDetector(
                                       onTap: () => setState(() {
-                                        category = "Saree";
+                                        category = "Cotton_vesti";
                                         isSelected = 1;
                                         print("$isSelected");
                                       }),
@@ -378,13 +444,13 @@ class _AdminAddProductsState extends State<AdminAddProducts>
                                         ),
                                         child: Padding(
                                           padding: const EdgeInsets.all(4),
-                                          child: Text("Saree"),
+                                          child: Text("Cotton Vesti"),
                                         ),
                                       ),
                                     ),
                                     GestureDetector(
                                       onTap: () => setState(() {
-                                        category = "Chudi";
+                                        category = "Cotton_lungi";
                                         isSelected = 2;
                                         print("$isSelected");
                                       }),
@@ -399,7 +465,256 @@ class _AdminAddProductsState extends State<AdminAddProducts>
                                         ),
                                         child: Padding(
                                           padding: const EdgeInsets.all(4),
+                                          child: Text("Cotton Lungi"),
+                                        ),
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () => setState(() {
+                                        category = "Cotton_shirt_bit";
+                                        isSelected = 3;
+                                        print("$isSelected");
+                                      }),
+                                      child: Container(
+                                        margin: EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          color: isSelected == 3
+                                              ? Colors.pinkAccent
+                                              : Colors.grey[300],
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(4),
+                                          child: Text("Cotton Shirt Bit"),
+                                        ),
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () => setState(() {
+                                        category = "Boy_baby_dress";
+                                        isSelected = 4;
+                                        print("$isSelected");
+                                      }),
+                                      child: Container(
+                                        margin: EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          color: isSelected == 4
+                                              ? Colors.pinkAccent
+                                              : Colors.grey[300],
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(4),
+                                          child: Text("Boy Baby Dress"),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 8.0),
+                                  child: Text(
+                                    "LADIES CATEGORY",
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                ),
+                                Wrap(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () => setState(() {
+                                        category = "Chudithaar";
+                                        isSelected = 5;
+                                        print("$isSelected");
+                                      }),
+                                      child: Container(
+                                        margin: EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          color: isSelected == 5
+                                              ? Colors.pinkAccent
+                                              : Colors.grey[300],
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(4),
                                           child: Text("Chudithaar"),
+                                        ),
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () => setState(() {
+                                        category = "Leggins";
+                                        isSelected = 6;
+                                        print("$isSelected");
+                                      }),
+                                      child: Container(
+                                        margin: EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          color: isSelected == 6
+                                              ? Colors.pinkAccent
+                                              : Colors.grey[300],
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(4),
+                                          child: Text("Leggins"),
+                                        ),
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () => setState(() {
+                                        category = "Tops";
+                                        isSelected = 7;
+                                        print("$isSelected");
+                                      }),
+                                      child: Container(
+                                        margin: EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          color: isSelected == 7
+                                              ? Colors.pinkAccent
+                                              : Colors.grey[300],
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(4),
+                                          child: Text("Tops"),
+                                        ),
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () => setState(() {
+                                        category = "Shawls";
+                                        isSelected = 8;
+                                        print("$isSelected");
+                                      }),
+                                      child: Container(
+                                        margin: EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          color: isSelected == 8
+                                              ? Colors.pinkAccent
+                                              : Colors.grey[300],
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(4),
+                                          child: Text("Shawls"),
+                                        ),
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () => setState(() {
+                                        category = "Girl_baby_frock";
+                                        isSelected = 9;
+                                        print("$isSelected");
+                                      }),
+                                      child: Container(
+                                        margin: EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          color: isSelected == 9
+                                              ? Colors.pinkAccent
+                                              : Colors.grey[300],
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(4),
+                                          child: Text("Girl Baby Frock"),
+                                        ),
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () => setState(() {
+                                        category = "Girl_baby_midi";
+                                        isSelected = 10;
+                                        print("$isSelected");
+                                      }),
+                                      child: Container(
+                                        margin: EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          color: isSelected == 10
+                                              ? Colors.pinkAccent
+                                              : Colors.grey[300],
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(4),
+                                          child: Text("Girl Baby Midi"),
+                                        ),
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () => setState(() {
+                                        category = "Silk_saree";
+                                        isSelected = 11;
+                                        print("$isSelected");
+                                      }),
+                                      child: Container(
+                                        margin: EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          color: isSelected == 11
+                                              ? Colors.pinkAccent
+                                              : Colors.grey[300],
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(4),
+                                          child: Text("Silk Saree"),
+                                        ),
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () => setState(() {
+                                        category = "Cotton_saree";
+                                        isSelected = 12;
+                                        print("$isSelected");
+                                      }),
+                                      child: Container(
+                                        margin: EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          color: isSelected == 12
+                                              ? Colors.pinkAccent
+                                              : Colors.grey[300],
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(4),
+                                          child: Text("Cotton Saree"),
+                                        ),
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () => setState(() {
+                                        category = "Poonam_saree";
+                                        isSelected = 13;
+                                        print("$isSelected");
+                                      }),
+                                      child: Container(
+                                        margin: EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          color: isSelected == 13
+                                              ? Colors.pinkAccent
+                                              : Colors.grey[300],
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(4),
+                                          child: Text("Poonam Saree"),
                                         ),
                                       ),
                                     ),
@@ -536,6 +851,24 @@ class _AdminAddProductsState extends State<AdminAddProducts>
                                           });
                                         }),
                                   ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(3.0),
+                                    child: ChoiceChip(
+                                        label: Text("Free Size"),
+                                        selectedColor: Colors.pinkAccent,
+                                        selected: CCSel7,
+                                        onSelected: (newvalue) {
+                                          setState(() {
+                                            CCSel7 = newvalue;
+                                            if (CCSel7 == true) {
+                                              sizeList.add("Free");
+                                            } else if (CCSel7 == false) {
+                                              sizeList.remove("Free");
+                                            }
+                                            print(sizeList.toString());
+                                          });
+                                        }),
+                                  ),
                                 ])
                               ]),
                         ),
@@ -545,12 +878,15 @@ class _AdminAddProductsState extends State<AdminAddProducts>
                         child: TextFormField(
                           controller: priceController,
                           keyboardType: TextInputType.number,
+                          maxLength: 4,
+
                           style: TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w600,
                           ),
                           decoration: InputDecoration(
                             hintText: "Price",
+                            counterText: "",
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                               borderSide: BorderSide(
@@ -569,18 +905,111 @@ class _AdminAddProductsState extends State<AdminAddProducts>
                           },
                         ),
                       ),
+                      Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: TextFormField(
+                          controller: MrpController,
+                          maxLength: 4,
+                          keyboardType: TextInputType.number,
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: "MRP",
+                            counterText: "",
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                          // onChanged: (value) {
+                          //   price = value;
+                          // },
+                          validator: (value) {
+                            if (value!.isEmpty) {
+                              return 'MRP cannot be empty !';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: TextFormField(
+                          controller: offerController,
+                          maxLength: 4,
+                          keyboardType: TextInputType.number,
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: "Save",
+                            counterText: "",
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                          // onChanged: (value) {
+                          //   price = value;
+                          // },
+                          validator: (value) {
+                            if (value!.isEmpty) {
+                              return 'Save cannot be empty !';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ),
             ),
+            uploading
+                ? Container(
+                    height: MediaQuery.of(context).size.height,
+                    width: MediaQuery.of(context).size.width,
+                    child: Center(
+                      child: Lottie.asset('assets/uploading.json'),
+                    ),
+                  )
+                : Container(),
           ],
         ),
         floatingActionButton: FloatingActionButton(
             onPressed: () {
-              validate();
-
-              uploadImages().whenComplete(() => _addToCart());
+              if (ImageUrlsFullList.length != 0) {
+                if (sizeList.length != 0 && category != null) {
+                  validate();
+                } else {
+                  showTopSnackBar(
+                      context,
+                      CustomSnackBar.error(
+                        message: "Please select the size and category",
+                        backgroundColor: Colors.redAccent,
+                      ),
+                      showOutAnimationDuration: Duration(milliseconds: 1000),
+                      displayDuration: Duration(seconds: 1),
+                      hideOutAnimationDuration: Duration(milliseconds: 1000));
+                }
+              } else {
+                showTopSnackBar(
+                    context,
+                    CustomSnackBar.error(
+                      message: "Please select atleast one image",
+                      backgroundColor: Colors.redAccent,
+                    ),
+                    showOutAnimationDuration: Duration(milliseconds: 1000),
+                    displayDuration: Duration(seconds: 1),
+                    hideOutAnimationDuration: Duration(milliseconds: 1000));
+              }
             },
             child: Icon(Icons.upload)),
       );

@@ -25,7 +25,7 @@ class _LoginPageState extends State<LoginPage> {
         decoration: BoxDecoration(
           image: DecorationImage(
             fit: BoxFit.cover,
-            image: AssetImage('assets/sign_in_bg.png'),
+            image: AssetImage('assets/Login.jpg'),
           ),
         ),
         child: Scaffold(
@@ -42,12 +42,20 @@ class _LoginPageState extends State<LoginPage> {
                     Text(
                       'Sign in to continue',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 18,
+                        color: Colors.black,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                    Image.asset(
-                      "assets/logo.png",
-                      width: 200,
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(30),
+                      child: Image.asset(
+                        "assets/logo.png",
+                        width: 200,
+                      ),
+                    ),
+                    SizedBox(
+                      height: 15,
                     ),
                     Column(
                       children: [
@@ -89,15 +97,17 @@ class _LoginPageState extends State<LoginPage> {
                         Text(
                           'By signing in you are agreeing to our',
                           style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
+                            fontSize: 18,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                         Text(
                           'Terms and Pricacy Policy',
                           style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
+                            fontSize: 18,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],

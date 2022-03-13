@@ -143,6 +143,23 @@ class _CartListViewState extends State<CartListView> {
                                 Row(
                                   children: [
                                     Text(
+                                      "Colour : ",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    Text(
+                                      data['color'],
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    Text(
                                       "₹",
                                       style: TextStyle(
                                           color: Colors.green,
@@ -157,24 +174,27 @@ class _CartListViewState extends State<CartListView> {
                                     SizedBox(
                                       width: 10,
                                     ),
-                                    Container(
-                                      padding:
-                                          EdgeInsets.symmetric(horizontal: 10),
-                                      margin: EdgeInsets.all(4),
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(14),
-                                        color: Colors.pinkAccent[100],
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(1),
-                                        child: Text(
-                                          data['size'],
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 12),
-                                        ),
-                                      ),
-                                    ),
+                                    data['size'] != "Free"
+                                        ? Container(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 10),
+                                            margin: EdgeInsets.all(4),
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(14),
+                                              color: Colors.pinkAccent[100],
+                                            ),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(1),
+                                              child: Text(
+                                                data['size'],
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 12),
+                                              ),
+                                            ),
+                                          )
+                                        : Container(),
                                   ],
                                 ),
                                 Container(

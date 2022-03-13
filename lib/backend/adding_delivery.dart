@@ -2,9 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce/Pages/Product_home_page.dart';
 import 'package:ecommerce/backend/sendNotification.dart';
 import 'package:ecommerce/widgets/delivery_accepted_lottie.dart';
+import 'package:ecommerce/widgets/no_internet.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:random_string/random_string.dart';
 import 'package:timelines/timelines.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -13,11 +15,13 @@ class AddingDelivery extends StatefulWidget {
   final String Address;
   final String Name;
   final String PhoneNumber;
+  final String AltPhoneNumber;
   const AddingDelivery({
     Key? key,
     required this.Address,
     required this.Name,
     required this.PhoneNumber,
+    required this.AltPhoneNumber,
   }) : super(key: key);
 
   @override
@@ -35,6 +39,26 @@ class _AddingDeliveryState extends State<AddingDelivery> {
   int total = 0;
   bool proceed = false;
   DateTime dateTime = DateTime.now();
+  bool hasInternet = false;
+  checkConnection() async {
+    bool result = await InternetConnectionChecker().hasConnection;
+    if (result == true) {
+      setState(() {
+        hasInternet = true;
+      });
+    } else {
+      Get.to(noInternet());
+      print('No internet :( Reason:');
+    }
+    InternetConnectionChecker().onStatusChange.listen((status) {
+      final hasInternet = status == InternetConnectionStatus.connected;
+
+      setState(() {
+        this.hasInternet = hasInternet;
+      });
+    });
+  }
+
   //Add Address
   Future _addAddress() async {
     // First Adding the address in DELIVERY -> DETAILS -> ADDRESS
@@ -49,6 +73,7 @@ class _AddingDeliveryState extends State<AddingDelivery> {
       "Email": _user!.email,
       "UserId": _user!.uid,
       "PhoneNumber": widget.PhoneNumber,
+      "AltPhoneNumber": widget.AltPhoneNumber,
     }).whenComplete(() {
       // Then Adding the ordered users in ORDERED USERS -> USERID
       FirebaseFirestore.instance
@@ -85,6 +110,7 @@ class _AddingDeliveryState extends State<AddingDelivery> {
                   .add({
                 "title": doc['title'],
                 "size": doc['size'],
+                "color": doc['color'],
                 "quantity": doc['quantity'],
                 "imgUrl": doc['imgUrl'],
                 "price": doc['price'],
@@ -99,6 +125,7 @@ class _AddingDeliveryState extends State<AddingDelivery> {
                   .add({
                 "title": doc['title'],
                 "size": doc['size'],
+                "color": doc['color'],
                 "quantity": doc['quantity'],
                 "imgUrl": doc['imgUrl'],
                 "price": doc['price'],
@@ -169,6 +196,7 @@ class _AddingDeliveryState extends State<AddingDelivery> {
         ElevatedButton(
           child: Text('Place Order'),
           onPressed: () {
+            checkConnection();
             try {
               _addAddress().then(
                 (value) => Get.to(
