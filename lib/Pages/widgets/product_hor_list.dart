@@ -9,7 +9,6 @@ import 'package:get/get.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:like_button/like_button.dart';
 import 'package:lottie/lottie.dart';
-import 'package:paginate_firestore/paginate_firestore.dart';
 import 'package:random_string/random_string.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -31,31 +30,6 @@ class _ProductHorizontalListState extends State<ProductHorizontalList> {
       FirebaseFirestore.instance.collection("Users");
   // Current User Id
   User? _user = FirebaseAuth.instance.currentUser;
-
-  Future _addToWhishList({
-    docId,
-    ImgUrl,
-    title,
-    desc,
-    price,
-    selectedSize,
-    category,
-  }) {
-    return _userRef
-        .doc(_user!.uid)
-        .collection("Whishlist")
-        .doc(docId + randomString(3))
-        .set(
-      {
-        "imgUrl": ImgUrl,
-        "title": title,
-        "description": desc,
-        "price": price,
-        "size": selectedSize,
-        "category": category,
-      },
-    );
-  }
 
   //Required Variables
   String title = "", desc = "", price = "", selectedSize = "", category = '';
@@ -99,47 +73,22 @@ class _ProductHorizontalListState extends State<ProductHorizontalList> {
     });
   }
 
-  void gettingData({required docId}) async {
-    print(docId.toString());
-    data = await FirebaseFirestore.instance
-        .collection('Products')
-        .doc(docId)
-        .get();
-
-    setState(() {
-      title = data['title'].toString();
-      print(title);
-      desc = data['description'].toString();
-      print(desc);
-      price = data['price'].toString();
-      print(price);
-      category = data['category'].toString();
-      print(category);
-      sizeList = data['size'];
-      print(sizeList);
-      ImgUrl = data['imgUrl'];
-      print(ImgUrl);
-      selectedSize = sizeList[isSelected];
-      print(selectedSize);
-    });
-    _addToWhishList(
-      ImgUrl: ImgUrl[0],
-      category: category,
-      desc: desc,
-      docId: docId,
-      price: price,
-      selectedSize: sizeList[0],
-      title: title,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    return PaginateFirestore(
-      query: widget.stream,
-      itemBuilderType: PaginateBuilderType.gridView,
-      itemBuilder: (context, documentSnapshots, index) {
-        if (documentSnapshots.length == 0) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: widget.stream,
+      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        if (snapshot.hasError) {
+          return Text('Something went wrong');
+        }
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          print("Some problem is occured in the connetion state");
+          return Center(
+            child: Container(),
+          );
+        }
+        if (snapshot.data!.docs.length == 0) {
           print("No Items Found");
           return Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -155,23 +104,23 @@ class _ProductHorizontalListState extends State<ProductHorizontalList> {
                   fontWeight: FontWeight.w800,
                 ),
               ),
+              
             ],
           );
         }
-
         if (hasInternet) {
           return GridView.builder(
             physics: NeverScrollableScrollPhysics(),
             scrollDirection: Axis.vertical,
             gridDelegate: new SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              mainAxisExtent: 270,
+              mainAxisExtent: 285,
             ),
             shrinkWrap: true,
-            itemCount: documentSnapshots.length,
+            itemCount: snapshot.data!.docs.length,
             itemBuilder: (context, index) {
-              final data = documentSnapshots[index].data() as Map?;
-              String likes = data!['likes'].toString();
+              DocumentSnapshot data = snapshot.data!.docs[index];
+              String likes = data['likes'].toString();
               return SlideTransition(
                 position: Tween<Offset>(
                   begin: Offset(0, 0.5 * index + 1),
@@ -201,8 +150,9 @@ class _ProductHorizontalListState extends State<ProductHorizontalList> {
                               tag: "producthome" + index.toString(),
                               child: GestureDetector(
                                 onTap: () {
-                                  final docId =
-                                      documentSnapshots[index].id.toString();
+                                  var docId = snapshot
+                                      .data!.docs[index].reference.id
+                                      .toString();
                                   print(docId);
                                   Get.to(
                                     ProductOverview(
@@ -260,10 +210,9 @@ class _ProductHorizontalListState extends State<ProductHorizontalList> {
                                                             .toString();
                                                     print(likes);
                                                   });
-                                                  final docId =
-                                                      documentSnapshots[index]
-                                                          .id
-                                                          .toString();
+                                                  var docId = snapshot.data!
+                                                      .docs[index].reference.id
+                                                      .toString();
                                                   FirebaseFirestore.instance
                                                       .collection("Products")
                                                       .doc(docId)
@@ -387,7 +336,7 @@ class _ProductHorizontalListState extends State<ProductHorizontalList> {
                                           Text(
                                             "SAVE : ",
                                             style: TextStyle(
-                                              height: 0.8,
+                                              height : 0.8,
                                               color: Colors.black,
                                               fontSize: 12,
                                               fontFamily: "Roboto",
@@ -460,3 +409,27 @@ class _ProductHorizontalListState extends State<ProductHorizontalList> {
   }
 }
 
+Widget ShimmerContainerLarge() {
+  return SizedBox(
+    height: 220,
+    child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        shrinkWrap: true,
+        itemCount: 10,
+        itemBuilder: (context, index) {
+          return Shimmer.fromColors(
+            baseColor: (Colors.grey[300])!,
+            highlightColor: (Colors.grey[200])!,
+            child: Container(
+              padding: EdgeInsets.only(top: 4),
+              margin: EdgeInsets.all(8),
+              width: 140,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.grey[300],
+              ),
+            ),
+          );
+        }),
+  );
+}

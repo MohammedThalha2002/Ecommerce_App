@@ -4,6 +4,7 @@ import 'package:ecommerce/widgets/no_internet.dart';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce/backend/crud.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
@@ -86,6 +87,19 @@ class _AdminAddProductsState extends State<AdminAddProducts>
       "likes": 0.toString(),
       "quantity": "1",
     }).then((value) {
+      FirebaseDatabase.instance.ref('Products').push().set({
+        "title": title,
+        "description": desc,
+        "color": color,
+        "price": price,
+        "MRP": MRP,
+        "offer": offer,
+        "size": sizeList,
+        "category": category,
+        "imgUrl": ImageUrlsFullList,
+        "likes": 0.toString(),
+        "quantity": "1",
+      });
       setState(() {
         ImageUrlsFullList.clear();
         uploading = false;
@@ -511,6 +525,27 @@ class _AdminAddProductsState extends State<AdminAddProducts>
                                         ),
                                       ),
                                     ),
+                                    GestureDetector(
+                                      onTap: () => setState(() {
+                                        category = "Gang_dress";
+                                        isSelected = 14;
+                                        print("$isSelected");
+                                      }),
+                                      child: Container(
+                                        margin: EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          color: isSelected == 14
+                                              ? Colors.pinkAccent
+                                              : Colors.grey[300],
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(4),
+                                          child: Text("Gang Dress"),
+                                        ),
+                                      ),
+                                    ),
                                   ],
                                 ),
                                 SizedBox(
@@ -546,7 +581,7 @@ class _AdminAddProductsState extends State<AdminAddProducts>
                                         ),
                                         child: Padding(
                                           padding: const EdgeInsets.all(4),
-                                          child: Text("Chudithaar"),
+                                          child: Text("Cotton Chudithaar"),
                                         ),
                                       ),
                                     ),

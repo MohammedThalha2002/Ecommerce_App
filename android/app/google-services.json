@@ -22,13 +22,37 @@
           }
         },
         {
+          "client_id": "684546928509-jc7jsj94ivccrtkra7levlmdqn9gpknc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.clothes.ecommerce",
+            "certificate_hash": "938e0152599b2d73223e36bee96e88febcdf6520"
+          }
+        },
+        {
+          "client_id": "684546928509-rndev5vj0v1g4pijnugpo3kg6h6gbalj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.clothes.ecommerce",
+            "certificate_hash": "44ca451797ff1e503c05cf15421388d02a336c27"
+          }
+        },
+        {
+          "client_id": "684546928509-uj2d0af33uge7kvuhkgv7n99ifr39ru9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.clothes.ecommerce",
+            "certificate_hash": "1f9b800cf8c21664db1ab8de365c2b03590b121a"
+          }
+        },
+        {
           "client_id": "684546928509-mrggmmhj4eah6is3fvksp883bad77on9.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCWzhsmdr7PRTceLlfd50es9Um0la10Gnk"
+          "current_key": "AIzaSyAcd3igHyPxhXm_lIrgF7FhuZDu5YCa_SE"
         }
       ],
       "services": {

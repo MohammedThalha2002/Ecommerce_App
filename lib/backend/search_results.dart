@@ -4,7 +4,8 @@ class ClothesService {
     "Cotton Lungi",
     "Cotton Shirt Bit",
     "Boy Baby Dress",
-    "Chudihtaar",
+    "Gang Dress",
+    "Cotton Chudihtaar",
     "Leggins",
     "Tops",
     "Shalls",
@@ -13,7 +14,7 @@ class ClothesService {
     "Silk Saree",
     "Cotton Saree",
     "Poonam Saree"
-];
+  ];
 
   static List<String> getSuggestions(String query) {
     List<String> matches = <String>[];

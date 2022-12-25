@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:paginate_firestore/paginate_firestore.dart';
 import 'package:ecommerce/Pages/auth/Login_page.dart';
 import 'package:ecommerce/Pages/my_cart.dart';
 import 'package:ecommerce/Pages/my_orders_delivery_details.dart';
@@ -22,6 +21,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutterflow_paginate_firestore/paginate_firestore.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
@@ -95,6 +95,10 @@ class _HomePageState extends State<HomePage>
   final Stream<QuerySnapshot> Cotton_saree_Stream = FirebaseFirestore.instance
       .collection('Products')
       .where('category', isEqualTo: 'Cotton_saree')
+      .snapshots();
+  final Stream<QuerySnapshot> Gang_dress_Stream = FirebaseFirestore.instance
+      .collection('Products')
+      .where('category', isEqualTo: 'Gang_dress')
       .snapshots();
 
   final Stream<QuerySnapshot> _BannerImagesStream =
@@ -180,7 +184,7 @@ class _HomePageState extends State<HomePage>
         stream = Cotton_Shirt_Bit_Stream;
       } else if (val == "Boy Baby Dress") {
         stream = Baby_Boy_Stream;
-      } else if (val == "Chudihtaar") {
+      } else if (val == "Cotton Chudihtaar") {
         stream = Chudithaar_Stream;
       } else if (val == "Leggins") {
         stream = Leggins_Stream;
@@ -198,6 +202,8 @@ class _HomePageState extends State<HomePage>
         stream = Cotton_saree_Stream;
       } else if (val == "Poonam Saree") {
         stream = Poonam_saree_Stream;
+      } else if (val == "Gang Dress") {
+        stream = Gang_dress_Stream;
       }
     });
   }
@@ -254,31 +260,11 @@ class _HomePageState extends State<HomePage>
                       ),
                     ),
                     Spacer(),
-                    InkWell(
-                      onTap: () {
-                        Get.to(
-                          AdminPanel(),
-                          transition: Transition.native,
-                          duration: Duration(milliseconds: 500),
-                        );
-                      },
-                      child: Container(
-                        margin: EdgeInsets.all(8),
-                        padding: EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withOpacity(0.3),
-                        ),
-                        child: Icon(
-                          Icons.admin_panel_settings,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
+                    // ADMIN
                     // InkWell(
                     //   onTap: () {
                     //     Get.to(
-                    //       MyCart(),
+                    //       AdminPanel(),
                     //       transition: Transition.native,
                     //       duration: Duration(milliseconds: 500),
                     //     );
@@ -291,11 +277,33 @@ class _HomePageState extends State<HomePage>
                     //       color: Colors.white.withOpacity(0.3),
                     //     ),
                     //     child: Icon(
-                    //       Icons.shopping_cart,
+                    //       Icons.admin_panel_settings,
                     //       color: Colors.white,
                     //     ),
                     //   ),
                     // ),
+                    // CUSTOMER
+                    InkWell(
+                      onTap: () {
+                        Get.to(
+                          MyCart(),
+                          transition: Transition.native,
+                          duration: Duration(milliseconds: 500),
+                        );
+                      },
+                      child: Container(
+                        margin: EdgeInsets.all(8),
+                        padding: EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withOpacity(0.3),
+                        ),
+                        child: Icon(
+                          Icons.shopping_cart,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
                   ]),
                   SizedBox(height: 5),
                   SizedBox(

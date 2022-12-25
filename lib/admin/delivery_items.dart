@@ -198,7 +198,6 @@ class _deliveryItemsState extends State<deliveryItems> {
                       ),
                     ),
                   ),
-                  //Showing Chudithaar category
                 ],
               ),
             ),

@@ -178,7 +178,7 @@ class _MyCartState extends State<MyCart> with SingleTickerProviderStateMixin {
                         ),
                         AnimatedButton(
                           child: Text(
-                            'Checkout',
+                            'Continuous',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w500,

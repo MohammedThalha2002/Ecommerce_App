@@ -155,6 +155,23 @@ class _MyOrdersState extends State<MyOrders> {
                                       ),
                                     ),
                                     OrderedHistory(docId: docId),
+                                    SizedBox(
+                                      height: 10,
+                                    ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            primary: Colors.green,
+                                          ),
+                                          child: Text("Cancel Order"),
+                                        ),
+                                      ],
+                                    )
                                   ],
                                 ),
                               ),
